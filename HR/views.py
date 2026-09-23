@@ -9,7 +9,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated,IsAdminUser,AllowAny
-from .permission import CustomerViews
+from .permission import CustomerViews,EmployeePermission,GroupePermission
 # Create your views here.
 
 
@@ -21,7 +21,7 @@ class CustomerShow(APIView):
         return Response(ser.data, status=status.HTTP_200_OK)
 
 class CustomerAdd(APIView):
-    permission_classes =[CustomerViews]
+    permission_classes =[GroupePermission]
     def post(self,request):
         ser = CustomerSerializer(data = request.data)
         if ser.is_valid():
@@ -30,7 +30,7 @@ class CustomerAdd(APIView):
         return Response(ser.errors, status = status.HTTP_400_BAD_REQUEST)
 
 class customerUpdate(APIView):
-    permission_classes = [CustomerViews]
+    permission_classes = [GroupePermission]
     def put(self,request, id):
         customer = Customers.objects.get(id = id)
         ser = CustomerSerializer(instance = customer, data = request.data, partial = True)
@@ -52,7 +52,7 @@ class customerDelete(APIView):
 user = User.objects.all()
 # view for Employee
 class EmployeeAdd(APIView):
-    permission_classes =[IsAdminUser]
+    permission_classes =[EmployeePermission]
     def post(self, request):
         ser = EmployeeSerializer(data = request.data)
         if ser.is_valid():
@@ -64,7 +64,7 @@ class EmployeeAdd(APIView):
 
 # List of Employee
 class EmployeeList(APIView):
-    permission_classes =[IsAuthenticated]
+    permission_classes =[EmployeePermission]
     def get(self, request):
         employee = Employee.objects.all()
         ser = EmployeeSerializer(instance = employee, many= True)
@@ -73,7 +73,7 @@ class EmployeeList(APIView):
 
 # UPdate Employee
 class EmployeeUpdate(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [EmployeePermission]
     def put(self, request, pk):
         employee = Employee.objects.get(id = pk)
         ser = EmployeeSerializer(instance = employee ,data = request.data)
@@ -85,7 +85,7 @@ class EmployeeUpdate(APIView):
 
         # Delete Employee
 class EmployeeDelete(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [EmployeePermission]
     def delete(self, request, id):
         employee = Employee.objects.get(id = id)
         employee.delete()

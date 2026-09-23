@@ -5,6 +5,7 @@ from .serializers import ArticleSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
+from .permission import IsUserOrReadOnly
 # Create your views here.
 
 
@@ -17,7 +18,8 @@ class ArticleListView(APIView):
 
     # view for adding new article
     def post(self, request):
-        user = request.user
+        self.permission_classes = [IsAuthenticated, IsUserOrReadOnly]
+        
         ser = ArticleSerializer(data= request.data)
         if ser.is_valid():
             if request.user.is_authenticated:
@@ -29,9 +31,11 @@ class ArticleListView(APIView):
 
 
 class ArticleUpdate(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsUserOrReadOnly]
+    
     def put(self, request,id):
         article = Articals.objects.get(id =id)
+        self.check_object_permissions(request, article)
         ser = ArticleSerializer(instance = article, data = request.data)
         if ser.is_valid():
             ser.save()
@@ -40,6 +44,14 @@ class ArticleUpdate(APIView):
         return Response(ser.errors, status = status.HTTP_400_BAD_REQUEST)
 
 
-        
+class ArticleDelete(APIView):
+    permission_classes = [IsAuthenticated, IsUserOrReadOnly]
+    def delete(self, request, id ):
+        article = Articals.objects.get(id = id)
+        self.check_object_permissions()
+        art = article
+        article.delete()
+        return Response({"message": f" you have deleted  the Article {art}" },
+                        status= status.HTTP_204_NO_CONTENT)
 
 
